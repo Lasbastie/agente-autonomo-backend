@@ -5,14 +5,14 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - name: Test SSH connectivity
+      - name: Test SSH ports
         run: |
-          for port in 22 22222 2222 2022; do
-            echo "Testing port $port..."
-            timeout 10 bash -c "cat < /dev/null > /dev/tcp/147.93.39.48/$port" 2>/dev/null && echo "PORT $port OPEN!" || echo "port $port closed"
+          for port in 22 22222 2222; do
+            echo -n "Port $port: "
+            timeout 5 bash -c "cat < /dev/null > /dev/tcp/147.93.39.48/$port" 2>/dev/null && echo "OPEN" || echo "closed"
           done
 
-      - name: Install Evolution API on VPS
+      - name: Install Evolution API
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 147.93.39.48
@@ -26,33 +26,8 @@ jobs:
             apt-get update -y
             apt-get install -y docker.io docker-compose curl
             mkdir -p /opt/evo && cd /opt/evo
-            cat > docker-compose.yml << 'EOFC'
-version: "3.8"
-services:
-  evolution:
-    image: atendai/evolution-api:latest
-    container_name: evolution
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      - SERVER_URL=http://147.93.39.48:8080
-      - AUTHENTICATION_TYPE=apikey
-      - AUTHENTICATION_API_KEY=agentecreator123
-      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
-      - QRCODE_LIMIT=30
-      - DEL_INSTANCE=false
-      - DATABASE_ENABLED=false
-      - REDIS_ENABLED=false
-      - LOG_LEVEL=ERROR
-    volumes:
-      - evo_store:/evolution/store
-      - evo_inst:/evolution/instances
-volumes:
-  evo_store:
-  evo_inst:
-EOFC
+            curl -fsSL https://raw.githubusercontent.com/Lasbastie/agente-autonomo-backend/main/docker-compose.yml -o docker-compose.yml
             docker-compose up -d
-            sleep 25
+            sleep 20
             curl -s http://localhost:8080
             echo "DONE"
