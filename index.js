@@ -1,4 +1,4 @@
-// agente creator v5
+// agente creator v6 - usa OpenAI ou Anthropic automaticamente
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -6,7 +6,8 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY;
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const EVOLUTION_URL = process.env.EVOLUTION_URL || 'https://evolution-api-production-a3c7.up.railway.app';
 const EVOLUTION_KEY = process.env.EVOLUTION_KEY || 'agentecreator123';
 const SERVER_URL = process.env.SERVER_URL || 'https://agente-autonomo-production-cb49.up.railway.app';
@@ -14,37 +15,32 @@ const SERVER_URL = process.env.SERVER_URL || 'https://agente-autonomo-production
 const qrCodes = {};
 const historico = {};
 
-app.post('/webhook/evolution', (req, res) => {
-  const body = req.body;
-  const event = body.event;
-  const instance = body.instance;
-  const data = body.data;
-  console.log('[Webhook] ' + event + ' - ' + instance);
-  if (event === 'qrcode.updated' && data && data.qrcode && data.qrcode.base64) {
-    qrCodes[instance] = data.qrcode.base64;
+async function chamarIA(messages, system) {
+  if (ANTHROPIC_KEY) {
+    const r = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      system: system, messages: messages
+    }, { headers: { 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } });
+    return r.data.content[0].text;
+  } else {
+    const msgs = system ? [{ role: 'system', content: system }, ...messages] : messages;
+    const r = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o-mini', max_tokens: 1000, messages: msgs
+    }, { headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'content-type': 'application/json' } });
+    return r.data.choices[0].message.content;
   }
-  if (event === 'messages.upsert') {
-    const msg = data && data.messages && data.messages[0];
-    if (!msg || msg.key.fromMe) return res.sendStatus(200);
-    const numero = msg.key.remoteJid;
-    const texto = (msg.message && (msg.message.conversation || (msg.message.extendedTextMessage && msg.message.extendedTextMessage.text)));
-    if (!texto || !numero) return res.sendStatus(200);
-    responder(instance, numero, texto);
-  }
-  res.sendStatus(200);
+}
+
+app.get('/', function(req, res) {
+  res.json({ status: 'Agente Creator v6 online', ia: ANTHROPIC_KEY ? 'Anthropic' : 'OpenAI' });
 });
 
 app.post('/chat', async (req, res) => {
   try {
-    const messages = req.body.messages;
-    const system = req.body.system || 'Voce e um assistente autonomo. Responda em portugues.';
-    const r = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: system,
-      messages: messages
-    }, { headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } });
-    res.json({ reply: r.data.content[0].text });
+    const messages = req.body.messages || [];
+    const system = req.body.system || 'Voce e um assistente autonomo inteligente. Responda em portugues brasileiro de forma util e direta.';
+    const reply = await chamarIA(messages, system);
+    res.json({ reply: reply });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -71,24 +67,38 @@ app.post('/instancia/criar', async (req, res) => {
   }
 });
 
+app.post('/webhook/evolution', (req, res) => {
+  const body = req.body;
+  const event = body.event;
+  const instance = body.instance;
+  const data = body.data;
+  if (event === 'qrcode.updated' && data && data.qrcode && data.qrcode.base64) {
+    qrCodes[instance] = data.qrcode.base64;
+    console.log('[QR] Armazenado para ' + instance);
+  }
+  if (event === 'messages.upsert') {
+    const msg = data && data.messages && data.messages[0];
+    if (!msg || msg.key.fromMe) return res.sendStatus(200);
+    const numero = msg.key.remoteJid;
+    const texto = msg.message && (msg.message.conversation || (msg.message.extendedTextMessage && msg.message.extendedTextMessage.text));
+    if (!texto || !numero) return res.sendStatus(200);
+    responder(instance, numero, texto);
+  }
+  res.sendStatus(200);
+});
+
 async function responder(instancia, numero, texto) {
   try {
     if (!historico[numero]) historico[numero] = [];
     historico[numero].push({ role: 'user', content: texto });
-    const r = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-      system: 'Voce e um assistente autonomo inteligente. Responda em portugues brasileiro.',
-      messages: historico[numero].slice(-10)
-    }, { headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } });
-    const resposta = r.data.content[0].text;
-    historico[numero].push({ role: 'assistant', content: resposta });
-    await axios.post(EVOLUTION_URL + '/message/sendText/' + instancia, { number: numero, text: resposta }, { headers: { apikey: EVOLUTION_KEY } });
+    const system = 'Voce e um assistente autonomo inteligente. Responda em portugues brasileiro.';
+    const reply = await chamarIA(historico[numero].slice(-10), system);
+    historico[numero].push({ role: 'assistant', content: reply });
+    await axios.post(EVOLUTION_URL + '/message/sendText/' + instancia, { number: numero, text: reply }, { headers: { apikey: EVOLUTION_KEY } });
   } catch (err) {
     console.error('[Responder]', err.message);
   }
 }
 
-app.get('/', function(req, res) { res.json({ status: 'Agente Creator v5 online' }); });
-
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, function() { console.log('Servidor v5 na porta ' + PORT); });
+app.listen(PORT, function() { console.log('Servidor v6 na porta ' + PORT); });
