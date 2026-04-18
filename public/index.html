@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SPEAKERS CRM</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 :root{--bg:#111;--sb:#1a1a1a;--sb2:#222;--panel:#1e1e1e;--panel2:#2a2a2a;--border:#2e2e2e;--gold:#C8A84B;--gold2:#a8882b;--gold3:#3a2e0a;--text:#e9edef;--text2:#8696a0;--blue:#53bdeb;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;--green:#25d366;--green2:#128c7e}
 body{background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden}
 
@@ -184,12 +184,12 @@ body{background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:h
 
 <div id="nav">
   <div class="nav-logo">SP</div>
-  <button class="nav-btn active" id="nav-chats" onclick="navTo('chats')" title="Conversas">ð¬</button>
-  <button class="nav-btn" id="nav-contacts" onclick="navTo('contacts')" title="Contatos">ð¥</button>
-  <button class="nav-btn" id="nav-kanban" onclick="navTo('kanban')" title="Kanban">â°</button>
-  <button class="nav-btn" id="nav-reports" onclick="navTo('reports')" title="RelatÃ³rios">ð</button>
+  <button class="nav-btn active" id="nav-chats" onclick="navTo('chats')" title="Conversas"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></button>
+  <button class="nav-btn" id="nav-contacts" onclick="navTo('contacts')" title="Contatos"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></button>
+  <button class="nav-btn" id="nav-kanban" onclick="navTo('kanban')" title="Kanban"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button>
+  <button class="nav-btn" id="nav-reports" onclick="navTo('reports')" title="Relatorios"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></button>
   <div style="flex:1"></div>
-  <button class="nav-btn" id="nav-config" onclick="navTo('config')" title="ConfiguraÃ§Ãµes">â</button>
+  <button class="nav-btn" id="nav-config" onclick="navTo('config')" title="Configuracoes"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94zM12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></button>
 </div>
 
 <div id="sb">
@@ -602,9 +602,7 @@ function criarConv(){
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-function gerarCod(){
-  var ph=document.getElementById('ph').value.replace(/\D/g,'');
-  if(ph.length<10){document.getElementById('pst').textContent='Numero invalido. Ex: 5511999999999';return;}
+function gerarCod(){var ph=document.getElementById("ph").value.replace(/\D/g,"");if(ph.length<10){document.getElementById("pst").textContent="Numero invalido";return;}var btn=document.getElementById("bpair");btn.disabled=true;btn.textContent="Aguarde...";fetch(apiUrl("/api/pairing-code"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:ph,instance:"speakers-crm"})}).then(r=>r.json()).then(d=>{btn.disabled=false;if(d.code){document.getElementById("cbx").style.display="block";document.getElementById("ccd").textContent=d.code;document.getElementById("pst").textContent="Codigo valido!";btn.textContent="Reenviar";window._pollSt=setInterval(checkStatus,3000);}else{document.getElementById("pst").textContent="Erro: "+(d.error||"tente novamente");btn.textContent="Tentar novamente";}}).catch(e=>{btn.disabled=false;btn.textContent="Tentar novamente";document.getElementById("pst").textContent="Erro: "+e.message;});}
   var btn=document.getElementById('bpair');
   btn.disabled=true;btn.textContent='Aguarde...';
   document.getElementById('pst').textContent='Criando instancia...';
@@ -702,6 +700,12 @@ function renderConfig(main){
 }
 
 renderSB();
+
+function apiUrl(p){return window.location.origin+p;}
+(function startSSE(){try{var es=new EventSource(apiUrl("/events"));es.onmessage=function(e){try{var d=JSON.parse(e.data);if(d.type==="new_message")handleMsg(d.data);}catch(x){}};es.onerror=function(){setTimeout(startSSE,5000);};}catch(e){}})(  );
+function handleMsg(m){var from=m.from.replace("@s.whatsapp.net","");var ts=new Date(m.timestamp).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});var id="wa_"+from;if(!convs[id])convs[id]={id:id,nm:from,ph:from,dept:"WhatsApp",st:"open",tag:"lead",ag:"bot",msgs:[],nota:""};convs[id].msgs.push({r:"u",t:m.text,ts:ts});var ci=document.getElementById("ci-"+id);if(ci){var pv=ci.querySelector(".cpv");if(pv)pv.textContent=m.text;}else renderSB();if(cur===id){var bg=document.getElementById("msgs");if(bg){addBub({r:"u",t:m.text,ts:ts},bg);bg.scrollTop=bg.scrollHeight;}}}
+function checkStatus(){fetch(apiUrl("/api/status/speakers-crm")).then(r=>r.json()).then(d=>{var st=(d.instance&&d.instance.state)||d.state||"";if(st==="open"||st==="CONNECTED"){document.getElementById("conn-bar").classList.add("on");document.getElementById("cb-dot").classList.add("on");document.getElementById("cb-t1").textContent="WhatsApp Conectado";document.getElementById("wst").textContent="Ativo";document.getElementById("wst").classList.add("on");}}).catch(function(){});}
+setTimeout(checkStatus,2000);
 </script>
 </body>
 </html>
