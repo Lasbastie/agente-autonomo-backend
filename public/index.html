@@ -498,11 +498,11 @@ function enviar(){
   if(convs[cur].ag==='bot'||botAtivo[cur]){
     var td=addTyping();
     var msgs=convs[cur].msgs.map(function(x){return{role:(x.r==='out'||x.r==='u')?'user':'assistant',content:x.t};});
-    fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs})})
+    fetch(apiUrl('/api/bot'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs})})
       .then(function(r){return r.json();})
       .then(function(d){
         if(td)td.remove();
-        var rep=d.reply||'Erro';
+        var rep=d.reply||d.text||d.message||'Erro ao responder';
         var rm={r:'a',t:rep,ts:h()};
         convs[cur].msgs.push(rm);
         addBub(rm,document.getElementById('msgs'));
@@ -606,7 +606,7 @@ function gerarCod(){var ph=document.getElementById("ph").value.replace(/\D/g,"")
   var btn=document.getElementById('bpair');
   btn.disabled=true;btn.textContent='Aguarde...';
   document.getElementById('pst').textContent='Criando instancia...';
-  fetch('/pairing-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:ph})})
+  fetch(apiUrl('/api/pairing-code'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:ph})})
     .then(function(r){return r.json();})
     .then(function(d){
       btn.disabled=false;btn.textContent='Novo codigo';
@@ -625,7 +625,7 @@ function gerarCod(){var ph=document.getElementById("ph").value.replace(/\D/g,"")
     });
 
 function checkConn(){
-  fetch('/qr/agente1').then(function(r){return r.json();}).then(function(d){
+  fetch(apiUrl('/api/status/speakers-crm')).then(function(r){return r.json();}).then(function(d){
     if(d.status==='connected'||d.status==='open'){
       clearInterval(qi);qi=null;
       document.getElementById('cb-dot').classList.add('on');
