@@ -706,5 +706,77 @@ function handleMsg(m){var from=m.from.replace("@s.whatsapp.net","");var ts=new D
 function checkStatus(){fetch(apiUrl("/api/status/speakers-crm")).then(r=>r.json()).then(d=>{var st=(d.instance&&d.instance.state)||d.state||"";if(st==="open"||st==="CONNECTED"){document.getElementById("conn-bar").classList.add("on");document.getElementById("cb-dot").classList.add("on");document.getElementById("cb-t1").textContent="WhatsApp Conectado";document.getElementById("wst").textContent="Ativo";document.getElementById("wst").classList.add("on");}}).catch(function(){});}
 setTimeout(checkStatus,2000);
 </script>
+
+<!-- IMPERADOR REAL-TIME PATCH -->
+<script>
+(function(){
+  console.log("[imperador] patch carregado");
+  try{
+    var es = new EventSource("/events");
+    var realContacts = window._realContacts = {};
+    es.onmessage = function(ev){
+      try{
+        var data = JSON.parse(ev.data);
+        console.log("[imperador SSE]", data);
+        if(data.type === "new_message" && data.data){
+          var outer = data.data;
+          var msg = outer.data || outer;
+          var chatId = msg.chatId || msg.from || outer.chatId;
+          var body = msg.body || msg.text || outer.body || "";
+          var name = msg.notifyName || msg.pushName || (chatId ? chatId.replace("@c.us","") : "Desconhecido");
+          if(chatId){
+            if(!realContacts[chatId]){
+              realContacts[chatId] = { chatId: chatId, name: name, messages: [] };
+            }
+            realContacts[chatId].messages.push({ body: body, timestamp: Date.now(), fromMe: msg.fromMe });
+            realContacts[chatId].lastMessage = body;
+            realContacts[chatId].lastTimestamp = Date.now();
+            renderRealContact(realContacts[chatId]);
+          }
+        }
+      }catch(e){ console.warn("[imperador] sse err", e); }
+    };
+  }catch(e){ console.error("[imperador] sse setup falhou", e); }
+
+  function renderRealContact(c){
+    var lists = document.querySelectorAll(".conv-list, .chat-list, [class*=\"conv\"], [class*=\"list\"]");
+    var list = lists[0];
+    if(!list) return;
+    var existing = list.querySelector('[data-chatid="' + c.chatId + '"]');
+    if(existing){
+      var lastEl = existing.querySelector(".conv-last, .last-msg");
+      if(lastEl) lastEl.textContent = c.lastMessage || "";
+      list.insertBefore(existing, list.firstChild);
+    } else {
+      var div = document.createElement("div");
+      div.setAttribute("data-chatid", c.chatId);
+      div.style.cssText = "padding:12px 16px;border-bottom:1px solid #222;cursor:pointer;display:flex;align-items:center;gap:12px;background:#1a1a1a;";
+      div.innerHTML = '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f4d03f);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;">' + (c.name[0] || "?").toUpperCase() + '</div>' +
+        '<div style="flex:1;overflow:hidden;"><div style="color:#fff;font-weight:600;">' + c.name + '</div><div style="color:#888;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (c.lastMessage||"") + '</div></div>';
+      list.insertBefore(div, list.firstChild);
+    }
+    toast("Nova msg: " + c.name);
+  }
+
+  function toast(text){
+    var t = document.createElement("div");
+    t.textContent = text;
+    t.style.cssText = "position:fixed;top:20px;right:20px;background:#d4af37;color:#000;padding:12px 20px;border-radius:10px;font-weight:600;z-index:999999;box-shadow:0 4px 20px rgba(0,0,0,.5);";
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity="0"; t.style.transition="opacity .3s"; setTimeout(function(){ t.remove(); }, 400); }, 3500);
+  }
+
+  window.imperador = {
+    contacts: function(){ return window._realContacts; },
+    send: function(chatId, message){
+      return fetch("/api/send-message", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ phone: chatId.replace("@c.us",""), message: message }) }).then(r => r.json());
+    },
+    history: function(chatId){
+      return fetch("/api/history?chatId=" + encodeURIComponent(chatId)).then(r => r.json());
+    }
+  };
+  console.log("[imperador] pronto - use window.imperador");
+})();
+</script>
 </body>
 </html>
