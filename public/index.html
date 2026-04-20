@@ -707,10 +707,30 @@ function checkStatus(){fetch(apiUrl("/api/status/speakers-crm")).then(r=>r.json(
 setTimeout(checkStatus,2000);
 </script>
 
-<!-- IMPERADOR REAL-TIME PATCH -->
+<!-- IMPERADOR REAL-TIME PATCH v2 -->
 <script>
 (function(){
-  console.log("[imperador] patch carregado");
+  console.log("[imperador] patch v2 carregado");
+  var CONTAINER_SELECTOR = "#cl";
+
+  async function checkConnection(){
+    try{
+      var r = await fetch("/api/status/speakers-crm");
+      var d = await r.json();
+      var conn = d.status === "connected" || d.state === "connected";
+      var badges = document.querySelectorAll("*");
+      for(var b of badges){
+        if(b.children.length === 0 && b.textContent.trim() === "Desconectado"){
+          b.textContent = conn ? "Conectado" : "Desconectado";
+          if(conn){ b.style.background = "#10b98133"; b.style.color = "#10b981"; }
+          break;
+        }
+      }
+    }catch(e){}
+  }
+  checkConnection();
+  setInterval(checkConnection, 10000);
+
   try{
     var es = new EventSource("/events");
     var realContacts = window._realContacts = {};
@@ -739,21 +759,29 @@ setTimeout(checkStatus,2000);
   }catch(e){ console.error("[imperador] sse setup falhou", e); }
 
   function renderRealContact(c){
-    var lists = document.querySelectorAll(".conv-list, .chat-list, [class*=\"conv\"], [class*=\"list\"]");
-    var list = lists[0];
-    if(!list) return;
+    var list = document.querySelector(CONTAINER_SELECTOR);
+    if(!list){ console.warn("[imperador] container nao encontrado"); return; }
     var existing = list.querySelector('[data-chatid="' + c.chatId + '"]');
     if(existing){
-      var lastEl = existing.querySelector(".conv-last, .last-msg");
-      if(lastEl) lastEl.textContent = c.lastMessage || "";
+      var nameEl = existing.querySelector(".cnm");
+      if(nameEl) nameEl.textContent = c.name;
       list.insertBefore(existing, list.firstChild);
     } else {
-      var div = document.createElement("div");
-      div.setAttribute("data-chatid", c.chatId);
-      div.style.cssText = "padding:12px 16px;border-bottom:1px solid #222;cursor:pointer;display:flex;align-items:center;gap:12px;background:#1a1a1a;";
-      div.innerHTML = '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f4d03f);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;">' + (c.name[0] || "?").toUpperCase() + '</div>' +
-        '<div style="flex:1;overflow:hidden;"><div style="color:#fff;font-weight:600;">' + c.name + '</div><div style="color:#888;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (c.lastMessage||"") + '</div></div>';
-      list.insertBefore(div, list.firstChild);
+      var first = list.querySelector(".ci");
+      if(!first) return;
+      var clone = first.cloneNode(true);
+      clone.id = "ci-real-" + c.chatId.replace(/[^a-zA-Z0-9]/g,"");
+      clone.setAttribute("data-chatid", c.chatId);
+      var nameEl = clone.querySelector(".cnm");
+      if(nameEl) nameEl.textContent = c.name;
+      var all = clone.querySelectorAll("*");
+      for(var el of all){
+        if(el.children.length === 0 && el.textContent.length <= 2 && /^[A-Z]{1,2}$/.test(el.textContent)){
+          el.textContent = (c.name[0] || "?").toUpperCase();
+          break;
+        }
+      }
+      list.insertBefore(clone, list.firstChild);
     }
     toast("Nova msg: " + c.name);
   }
@@ -775,7 +803,7 @@ setTimeout(checkStatus,2000);
       return fetch("/api/history?chatId=" + encodeURIComponent(chatId)).then(r => r.json());
     }
   };
-  console.log("[imperador] pronto - use window.imperador");
+  console.log("[imperador] v2 pronto");
 })();
 </script>
 </body>
